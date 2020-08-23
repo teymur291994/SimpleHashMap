@@ -1,0 +1,65 @@
+import UIKit
+
+extension String {
+    func hash() -> Int {
+        var result = UInt64 (5381)
+        for b in utf8 {
+            result = 127 * (result & 0x00ffffffffffffff) + UInt64(b)
+        }
+        return Int(result)
+    }
+}
+
+
+class Item {
+    var previous: Item?
+    var value: Any
+
+    init(_ value: Any) {
+        self.value = value
+    }
+}
+
+struct LinkedList {
+
+    private var startItem: Item?
+    private(set) var lastItem: Item?
+
+    mutating func add(_ value: Any) {
+        let addedItem = Item(value)
+        let previousLastItem = lastItem
+        if startItem == nil {
+            startItem = addedItem
+        }
+
+        lastItem = addedItem
+        lastItem?.previous = previousLastItem
+    }
+}
+
+struct SimpleHashMap {
+    private var array: [LinkedList?] = Array(repeating: nil, count: 10)
+
+    mutating func addValue(value: Any, for key: String) {
+        let keyHashValue = key.hash()
+        var insertInArrayIndex: Int
+        if array.count == 0 {
+            insertInArrayIndex = 0
+        } else {
+            insertInArrayIndex = keyHashValue % array.count
+        }
+        if var linkedList = array[insertInArrayIndex] {
+            linkedList.add(value)
+            array[insertInArrayIndex] = linkedList
+        } else {
+            var linkedList = LinkedList()
+            linkedList.add(value)
+            array[insertInArrayIndex] = linkedList
+        }
+    }
+}
+
+var hashMap = SimpleHashMap()
+hashMap.addValue(value: 342, for: "testKey")
+hashMap.addValue(value: 349, for: "testKey2")
+hashMap.addValue(value: 341, for: "testKey3")
